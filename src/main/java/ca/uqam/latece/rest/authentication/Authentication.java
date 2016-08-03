@@ -21,7 +21,6 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.json.simple.JSONObject;
@@ -32,8 +31,9 @@ import ca.uqam.latece.rest.database.Database;
 @Path("/authentication")
 public class Authentication {
 
+	@SuppressWarnings("unchecked")
 	@POST
-	@Produces(MediaType.TEXT_HTML)
+	@Produces("application/json")
 	@Consumes("application/x-www-form-urlencoded")
 	public Response authenticateUser(@FormParam("username") String username, @FormParam("password") String password){
 		String token = "";
@@ -41,7 +41,17 @@ public class Authentication {
 		try{	
 			if(authenticate(username, password)){
 				token = issueToken(username);
-				response = Response.ok(token).build();
+				Date expirationDate = null;
+				
+				ResultSet resultSet = Database.tableRequest("SELECT token_expiration_date FROM Volunteer WHERE username='" + username + "' AND token='" + token + "'");
+				if(resultSet.next()){
+					expirationDate = resultSet.getDate("token_expiration_date");
+				}
+				JSONObject toReturn = new JSONObject();
+				toReturn.put("token", token);
+				toReturn.put("exp_date", "" + expirationDate + "");
+				
+				response = Response.ok(toReturn.toJSONString()).build();
 			}
 		}catch(Exception e){
 			System.out.println("ERROR: " + e);
@@ -49,10 +59,10 @@ public class Authentication {
 		return response;
 	}
 	
-	private boolean authenticate(String username, String password) throws SQLException{
+	private boolean authenticate(String username, String password) throws SQLException, NoSuchAlgorithmException{
 		Database.getConnection();
 		boolean succeed = false;
-		
+		password = getEncryptedPassword(password);
 		ResultSet resultSet = Database.tableRequest("SELECT COUNT(*) as exist FROM Volunteer WHERE username = '" + username + "' AND password = '" + password + "'");
 		if(resultSet.next()){
 			if(resultSet.getInt("exist") > 0){

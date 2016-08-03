@@ -12,16 +12,18 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+
 import ca.uqam.latece.rest.authentication.Authentication;
 
 public class TestAuthentication {
@@ -32,7 +34,7 @@ public class TestAuthentication {
 	@Before
 	public void setUp() throws Exception {
 		webClient = new WebClient();
-		url = new URL("http://localhost:8080/VolunteerManager2/api/authentication");
+		url = new URL("http://localhost:8080/VolunteerManager/api/authentication");
 		requestSettings = new WebRequest(url, HttpMethod.POST);
 	}
 
@@ -44,19 +46,28 @@ public class TestAuthentication {
 		requestSettings = null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void successfullAuthentication() throws Exception {
 		//put credentials that exist.
 		ArrayList<NameValuePair> parameters = new ArrayList<NameValuePair>();
 		parameters.add(new NameValuePair("username", "JohnDoe"));
-		parameters.add(new NameValuePair("password", "pw"));
+		parameters.add(new NameValuePair("password", "password"));
 		requestSettings.setRequestParameters(parameters);
 	
-		HtmlPage currentPage = webClient.getPage(requestSettings);
-		int statusCode = webClient.getPage(requestSettings).getWebResponse().getStatusCode();
+		Page currentPage = webClient.getPage(requestSettings);
+		int statusCode = currentPage.getWebResponse().getStatusCode();
 
+		Object obj = new JSONParser().parse(currentPage.getWebResponse().getContentAsString());
+		JSONObject returned = (JSONObject)obj;
+		
 		assertEquals(200, statusCode);
-		assertEquals("hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE", currentPage.asText());		
+		
+		JSONObject toReturn = new JSONObject();
+		toReturn.put("token", "hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE");
+		toReturn.put("exp_date", "2016-11-11");
+		
+		assertEquals(toReturn, returned);	
 	}
 	
 	@Test

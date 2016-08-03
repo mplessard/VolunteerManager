@@ -37,7 +37,7 @@ public class TestVolunteerService {
 		Database.getConnection();
 		ArrayList<String> sqlOp = new ArrayList<String>();
 		sqlOp.add("DELETE FROM volunteer WHERE username='TestUser'");
-		sqlOp.add("INSERT INTO volunteer VALUES(1, 'JohnDoe', 'John@Doe.com', 'pw', 2, 'hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE', date('2017-09-01'))");
+		sqlOp.add("INSERT INTO volunteer VALUES(1, 'JohnDoe', 'John@Doe.com', 'pw', 2, 'hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE', date('2016-11-11'))");
 		sqlOp.add("INSERT INTO GardenResponsibility VALUES(1, 1, 1, 'Carotte')");
 		sqlOp.add("INSERT INTO GardenResponsibility VALUES(3, 1, 2, 'Brocoli')");
 		
@@ -50,8 +50,8 @@ public class TestVolunteerService {
 	public void setUp() throws Exception {
 		webClient = new WebClient();
 		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
-		url1 = new URL("http://localhost:8080/VolunteerManager2/api/v1/volunteerservice/volunteers");
-		url2 = new URL("http://localhost:8080/VolunteerManager2/api/v1/volunteerservice/volunteers/1?access_token=hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE");
+		url1 = new URL("http://localhost:8080/VolunteerManager/api/v1/volunteerservice/volunteers");
+		url2 = new URL("http://localhost:8080/VolunteerManager/api/v1/volunteerservice/volunteers/1?access_token=hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE");
 		requestSettings1 = new WebRequest(url1, HttpMethod.POST);
 		requestSettings2 = new WebRequest(url2, HttpMethod.DELETE);
 		requestSettings3 = new WebRequest(url2, HttpMethod.POST);

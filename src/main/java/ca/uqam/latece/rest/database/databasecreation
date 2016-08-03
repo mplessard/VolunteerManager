@@ -1,8 +1,6 @@
 DROP TABLE GardenResponsibility;
 DROP TABLE Volunteer;
 DROP TABLE role;
-DROP TABLE Garden;
-DROP TABLE GardenCategory;
 
 CREATE TABLE Role(
 	ID integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -18,43 +16,21 @@ CREATE TABLE Volunteer(
 	token_expiration_date date,
 	FOREIGN KEY (role) REFERENCES role(ID) )
 ;
-CREATE TABLE GardenCategory(
-	ID integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	name varchar(255) NOT NULL)
-;
-CREATE TABLE Garden(
-	ID integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	name varchar(255) NOT NULL,
-	ID_category integer NOT NULL,
-	address varchar(255),
-	FOREIGN KEY (ID_category) REFERENCES GardenCategory(ID)
-)
-;
 CREATE TABLE GardenResponsibility(
 	ID integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	ID_Volunteer integer NOT NULL,
 	ID_Garden integer NOT NULL,
 	task varchar(255) NOT NULL,
-	CONSTRAINT fk_volunteer FOREIGN KEY (ID_Volunteer) REFERENCES Volunteer(ID) ON DELETE CASCADE,
-	CONSTRAINT fk_garden FOREIGN KEY (ID_Garden) REFERENCES Garden(ID) ON DELETE CASCADE)
+	CONSTRAINT fk_volunteer FOREIGN KEY (ID_Volunteer) REFERENCES Volunteer(ID) ON DELETE CASCADE
+	)
 ;
 INSERT INTO Role(name) VALUES("user");
 INSERT INTO Role(name) VALUES("admin");
 
-INSERT INTO Volunteer(username, email, password, role, token, token_expiration_date) VALUES("JohnDoe", "John@Doe.com", "pw", 2, "hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE", date("2017-09-01"));
-INSERT INTO Volunteer(username, email, password) VALUES("JaneDoe", "Jane@Doe.com", "pw");
-INSERT INTO Volunteer(username, email, password) VALUES("JaneDoe2", "Jane2@Doe.com", "pw");
-
-INSERT INTO GardenCategory(name) VALUES("Prairie Mellifere");
-INSERT INTO GardenCategory(name) VALUES("Serre");
-INSERT INTO GardenCategory(name) VALUES("Potager collectif");
-INSERT INTO GardenCategory(name) VALUES("Ruche");
-INSERT INTO GardenCategory(name) VALUES("Sous-bois");
-INSERT INTO GardenCategory(name) VALUES("Terrasse");
-INSERT INTO GardenCategory(name) VALUES("Composte");
-
-INSERT INTO Garden(name, ID_category) VALUES("Prairie Mellifere de l'UQAM", 1);
-INSERT INTO Garden(name, ID_category) VALUES("Serre du CRAPAUD", 2);
+INSERT INTO Volunteer(username, email, password, role, token, token_expiration_date) VALUES("JohnDoe", "John@Doe.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", 2, "hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE", date("2017-09-01"));
+INSERT INTO Volunteer(username, email, password) VALUES("JaneDoe", "Jane@Doe.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=");
+INSERT INTO Volunteer(username, email, password) VALUES("JaneDoe2", "Jane2@Doe.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=");
+INSERT INTO Volunteer(username, email, password, role) VALUES("volunteerViewer", "volunteer@Viewer.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", 2);
 
 INSERT INTO GardenResponsibility(ID_Volunteer, ID_Garden, task) VALUES(1, 1, "Carotte");
 INSERT INTO GardenResponsibility(ID_Volunteer, ID_Garden, task) VALUES(1, 2, "Brocoli");

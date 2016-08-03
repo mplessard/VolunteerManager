@@ -42,7 +42,7 @@ public class volunteerService {
 		JSONObject volunteers = new JSONObject();
 
 		if (Authentication.authenticationByToken(accessToken)) {
-			ResultSet resultSet = Database.tableRequest("SELECT username FROM Volunteer");
+			ResultSet resultSet = Database.tableRequest("SELECT username, id FROM Volunteer");
 
 			if (!resultSet.next()) {
 				volunteers.put("error", "no data found");
@@ -50,9 +50,13 @@ public class volunteerService {
 				resultSet.beforeFirst();
 
 				while (resultSet.next()) {
-					volunteersList.add(resultSet.getString("username"));
+					JSONObject volunteerAttributes = new JSONObject();
+					volunteerAttributes.put("id", resultSet.getInt("id"));
+					volunteerAttributes.put("username", resultSet.getString("username"));
+					volunteersList.add(volunteerAttributes);
+					volunteerAttributes = null;
 				}
-				volunteers.put("username", volunteersList);
+				volunteers.put("volunteers", volunteersList);
 			}
 		} else {
 			volunteers.put("error", "The access token is invalid.");
@@ -116,7 +120,7 @@ public class volunteerService {
 
 		if (Authentication.authenticationByToken(accessToken)) {
 			ResultSet resultSet = Database.tableRequest("SELECT username, email FROM Volunteer WHERE ID=" + id);
-			ResultSet resultSet2 = Database.tableRequest("SELECT GR.id, G.name, task FROM gardenResponsibility AS GR, Garden AS G WHERE GR.ID_Garden = G.id AND ID_Volunteer =" + id);
+			ResultSet resultSet2 = Database.tableRequest("SELECT id, task FROM gardenResponsibility WHERE ID_Volunteer =" + id);
 
 			if (!resultSet.next()) {
 				volunteer.put("error", "no data found.");
@@ -131,9 +135,9 @@ public class volunteerService {
 					JSONObject gardenAndTask = new JSONObject();
 					
 					while (resultSet2.next()) {
-						gardenAndTask.put("garden", resultSet2.getString("G.name"));
+						//gardenAndTask.put("garden", resultSet2.getString("G.name"));
 						gardenAndTask.put("task", resultSet2.getString("task"));
-						idGardenTask.put(resultSet2.getInt("GR.id"), gardenAndTask);
+						idGardenTask.put(resultSet2.getInt("id"), gardenAndTask);
 						gardenAndTask = new JSONObject();
 					}
 					volunteer.put("tasks", idGardenTask);
@@ -155,7 +159,7 @@ public class volunteerService {
 		if (Authentication.authenticationByToken(accessToken)){
 			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
 			
-			if((Integer)decryptedToken.get("role") == 2 || decryptedToken.get("username").equals(username)){
+			if((int)(long)decryptedToken.get("role") == 2 || decryptedToken.get("username").equals(username)){
 			
 				String sql = "SELECT username FROM Volunteer WHERE ID=" + id;
 				ResultSet resultSet = Database.tableRequest(sql);
@@ -212,7 +216,7 @@ public class volunteerService {
 		if (Authentication.authenticationByToken(accessToken)) {
 			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
 			
-			if((Integer)decryptedToken.get("role") == 2 || decryptedToken.get("id").equals(id)){
+			if((int)(long)decryptedToken.get("role") == 2 || decryptedToken.get("id").equals(id)){
 				ResultSet resultSet = Database.tableRequest("SELECT COUNT(*) AS exist FROM Volunteer WHERE ID=" + id);
 				resultSet.next();
 				if (resultSet.getInt("exist") > 0) {
@@ -229,5 +233,120 @@ public class volunteerService {
 			responseMessage = "Access denied: the access token is invalid.";
 		}
 		return Response.status(responseCode).entity(responseMessage).build();
+	}
+	
+	@Path("/volunteers/{id:[0-9]*}/tasks")
+	@POST
+	@Produces(MediaType.TEXT_HTML)
+	@Consumes("application/x-www-form-urlencoded")
+	public Response addTaskToVolunteer(@QueryParam("access_token") String accessToken, @PathParam("id") int id, @FormParam("gardenid") int gardenID, @FormParam("task") String task) throws SQLException,ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ParseException {
+		int responseCode = 404;
+		String responseMessage = "Volunteer with the id " + id + " is not in the Database.";
+		if (Authentication.authenticationByToken(accessToken)){
+			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
+			
+			if((int)(long)decryptedToken.get("role") == 2 || (int)decryptedToken.get("id") == id){
+				//TODO vérifie si id garden est valide
+				
+				Database.operationOnTable("INSERT INTO GardenResponsibility(ID_Volunteer, ID_Garden, task) VALUES(" + id + ", " + gardenID + ", '" + task + "')");
+	
+				responseCode = 200;
+				responseMessage = "The task has been added.";
+					
+			}else{
+				responseMessage = "Access denied: You are not authorized to modify other volunteer.";
+			}
+		} else {
+			responseCode = 401;
+			responseMessage = "Access denied: the access token is invalid.";
+		}
+		return Response.status(responseCode).entity(responseMessage).build();
+	}
+	
+	@Path("/volunteers/{id:[0-9]*}/tasks/{taskid:[0-9]*}")
+	@DELETE
+	@Produces(MediaType.TEXT_HTML)
+	public Response deleteTaskToVolunteer(@QueryParam("access_token") String accessToken, @PathParam("id") int id, @PathParam("taskid") int taskID) throws SQLException,ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ParseException {
+		int responseCode = 404;
+		String responseMessage = "Volunteer with the id " + id + " is not in the Database.";
+		if (Authentication.authenticationByToken(accessToken)){
+			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
+			
+			if((int)(long)decryptedToken.get("role") == 2 || (int)decryptedToken.get("id") == id){				
+				Database.operationOnTable("DELETE FROM GardenResponsibility WHERE id=" + taskID);
+	
+				responseCode = 200;
+				responseMessage = "The task has been deleted.";
+					
+			}else{
+				responseMessage = "Access denied: You are not authorized to modify other volunteer.";
+			}
+		} else {
+			responseCode = 401;
+			responseMessage = "Access denied: the access token is invalid.";
+		}
+		return Response.status(responseCode).entity(responseMessage).build();
+	}
+	
+	@Path("/volunteers/{id:[0-9]*}/tasks/{taskid:[0-9]*}")
+	@POST
+	@Produces(MediaType.TEXT_HTML)
+	public Response editTaskToVolunteer(@QueryParam("access_token") String accessToken, @PathParam("id") int id, @PathParam("taskid") int taskID, @FormParam("taskdesc") String taskDesc) throws SQLException,ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ParseException {
+		int responseCode = 404;
+		String responseMessage = "Volunteer with the id " + id + " is not in the Database.";
+		if (Authentication.authenticationByToken(accessToken)){
+			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
+			
+			if((int)(long)decryptedToken.get("role") == 2 || (int)decryptedToken.get("id") == id){		
+				Database.operationOnTable("UPDATE GardenResponsibility SET task='" + taskDesc + "' WHERE id=" + taskID);
+	
+				responseCode = 200;
+				responseMessage = "The task has been updated.";
+					
+			}else{
+				responseMessage = "Access denied: You are not authorized to modify other volunteer.";
+			}
+		} else {
+			responseCode = 401;
+			responseMessage = "Access denied: the access token is invalid.";
+		}
+		return Response.status(responseCode).entity(responseMessage).build();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Path("/volunteers/{id:[0-9]*}/tasks/{taskid:[0-9]*}")
+	@GET
+	@Produces("application/json")
+	public Response getTaskToVolunteer(@QueryParam("access_token") String accessToken, @PathParam("id") int id, @PathParam("taskid") int taskID) throws SQLException,ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ParseException {
+		int responseCode = 404;
+		JSONObject task = new JSONObject();
+		
+		if (Authentication.authenticationByToken(accessToken)){
+			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
+			
+			if((int)(long)decryptedToken.get("role") == 2 || (int)decryptedToken.get("id") == id){		
+				
+				ResultSet resultSet = Database.tableRequest("SELECT id, ID_Volunteer, task, ID_Garden FROM gardenResponsibility WHERE id=" + taskID + " AND ID_Volunteer=" + id);
+
+				if (!resultSet.next()) {
+					task.put("error", "no data found.");
+					responseCode = 200;
+				} else {
+					task.put("taskID", resultSet.getInt("id"));
+					task.put("volunteerID", resultSet.getInt("ID_Volunteer"));
+					task.put("task", resultSet.getString("task"));
+					task.put("gardenID", resultSet.getInt("ID_garden"));
+					
+					responseCode = 200;
+				}	
+			}else{
+				responseCode = 200;
+				task.put("error", "Access denied: You are not authorized to modify other volunteer's task.");
+			}
+		} else {
+			responseCode = 401;
+			task.put("error", "Access denied: the access token is invalid.");
+		}
+		return Response.status(responseCode).entity(task.toJSONString()).build();
 	}
 }
