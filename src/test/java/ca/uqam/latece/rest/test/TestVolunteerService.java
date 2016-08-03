@@ -37,7 +37,7 @@ public class TestVolunteerService {
 		Database.getConnection();
 		ArrayList<String> sqlOp = new ArrayList<String>();
 		sqlOp.add("DELETE FROM volunteer WHERE username='TestUser'");
-		sqlOp.add("INSERT INTO volunteer VALUES(1, 'JohnDoe', 'John@Doe.com', 'pw', 2, 'hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE', date('2016-11-11'))");
+		sqlOp.add("INSERT INTO volunteer VALUES(1, 'JohnDoe', 'John@Doe.com', 'XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=', 2, 'hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE', date('2016-11-11'))");
 		sqlOp.add("INSERT INTO GardenResponsibility VALUES(1, 1, 1, 'Carotte')");
 		sqlOp.add("INSERT INTO GardenResponsibility VALUES(3, 1, 2, 'Brocoli')");
 		

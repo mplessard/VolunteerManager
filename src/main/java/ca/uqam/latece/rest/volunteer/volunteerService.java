@@ -120,7 +120,7 @@ public class volunteerService {
 
 		if (Authentication.authenticationByToken(accessToken)) {
 			ResultSet resultSet = Database.tableRequest("SELECT username, email FROM Volunteer WHERE ID=" + id);
-			ResultSet resultSet2 = Database.tableRequest("SELECT id, task FROM gardenResponsibility WHERE ID_Volunteer =" + id);
+			ResultSet resultSet2 = Database.tableRequest("SELECT id, task FROM gardenResponsibility WHERE ID_Volunteer=" + id);
 
 			if (!resultSet.next()) {
 				volunteer.put("error", "no data found.");
@@ -324,7 +324,7 @@ public class volunteerService {
 		if (Authentication.authenticationByToken(accessToken)){
 			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
 			
-			if((int)(long)decryptedToken.get("role") == 2 || (int)decryptedToken.get("id") == id){		
+			if((int)(long)decryptedToken.get("role") == 2 || (int)(long)decryptedToken.get("id") == id){		
 				
 				ResultSet resultSet = Database.tableRequest("SELECT id, ID_Volunteer, task, ID_Garden FROM gardenResponsibility WHERE id=" + taskID + " AND ID_Volunteer=" + id);
 
