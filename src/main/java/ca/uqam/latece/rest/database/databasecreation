@@ -30,7 +30,7 @@ INSERT INTO Role(name) VALUES("admin");
 INSERT INTO Volunteer(username, email, password, role, token, token_expiration_date) VALUES("JohnDoe", "John@Doe.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", 2, "hj5T_-WpCkLrcJc2K1i_FcWjIoRuub-khV4DAgEQpEcADi5TyZsEwhETgVqud9OE", date("2017-09-01"));
 INSERT INTO Volunteer(username, email, password) VALUES("JaneDoe", "Jane@Doe.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=");
 INSERT INTO Volunteer(username, email, password) VALUES("JaneDoe2", "Jane2@Doe.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=");
-INSERT INTO Volunteer(username, email, password, role) VALUES("volunteerViewer", "volunteer@Viewer.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", 2);
+INSERT INTO Volunteer(username, email, password, role, token, token_expiration_date) VALUES("volunteerViewer", "volunteer@Viewer.com", "XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=", 2, "sVmThUIdLblP1oVOvDB6eHpBIollsO3NNmuSq-dOrlCsYZWMmRVhI8i_aXTyzQIB", date("2017-09-01"));
 
 INSERT INTO GardenResponsibility(ID_Volunteer, ID_Garden, task) VALUES(1, 1, "Carotte");
 INSERT INTO GardenResponsibility(ID_Volunteer, ID_Garden, task) VALUES(1, 2, "Brocoli");
