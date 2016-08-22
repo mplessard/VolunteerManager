@@ -46,6 +46,7 @@ public class volunteerService {
 
 			if (!resultSet.next()) {
 				volunteers.put("error", "no data found");
+				volunteersList.add(volunteers);
 			} else {
 				resultSet.beforeFirst();
 
@@ -54,14 +55,13 @@ public class volunteerService {
 					volunteerAttributes.put("id", resultSet.getInt("id"));
 					volunteerAttributes.put("username", resultSet.getString("username"));
 					volunteersList.add(volunteerAttributes);
-					volunteerAttributes = null;
 				}
-				volunteers.put("volunteers", volunteersList);
 			}
 		} else {
 			volunteers.put("error", "The access token is invalid.");
+			volunteersList.add(volunteers);
 		}
-		return volunteers.toJSONString();
+		return volunteersList.toJSONString();
 	}
 
 	@Path("/volunteers/")
@@ -323,11 +323,9 @@ public class volunteerService {
 		
 		if (Authentication.authenticationByToken(accessToken)){
 			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
-			
-			if((int)(long)decryptedToken.get("role") == 2 || (int)(long)decryptedToken.get("id") == id){		
-				
+			if((int)(long)decryptedToken.get("role") == 2){
 				ResultSet resultSet = Database.tableRequest("SELECT id, ID_Volunteer, task, ID_Garden FROM gardenResponsibility WHERE id=" + taskID + " AND ID_Volunteer=" + id);
-
+	
 				if (!resultSet.next()) {
 					task.put("error", "no data found.");
 					responseCode = 200;
@@ -338,15 +336,60 @@ public class volunteerService {
 					task.put("gardenID", resultSet.getInt("ID_garden"));
 					
 					responseCode = 200;
-				}	
+				}
 			}else{
-				responseCode = 200;
-				task.put("error", "Access denied: You are not authorized to modify other volunteer's task.");
+				responseCode = 401;
+				task.put("error", "Access denied: You are not authorized to see this task.");
 			}
 		} else {
 			responseCode = 401;
 			task.put("error", "Access denied: the access token is invalid.");
 		}
 		return Response.status(responseCode).entity(task.toJSONString()).build();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Path("/volunteers/tasks")
+	@GET
+	@Produces("application/json")
+	public Response getAllTasks(@QueryParam("access_token") String accessToken) throws SQLException,ClassNotFoundException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, ParseException {
+		int responseCode = 404;
+		JSONArray tasks = new JSONArray();
+		JSONObject task = new JSONObject();
+	
+		if (Authentication.authenticationByToken(accessToken)){		
+			JSONObject decryptedToken = Authentication.getTokenDecrypted(accessToken);
+			
+			if((int)(long)decryptedToken.get("role") == 2){
+				ResultSet resultSet = Database.tableRequest("SELECT id, ID_Volunteer, task, ID_Garden FROM gardenResponsibility");
+	
+				if (!resultSet.next()) {
+					task.put("error", "no data found.");
+					tasks.add(task);
+					responseCode = 200;
+				} else {
+					resultSet.beforeFirst();
+					while(resultSet.next()){
+						task.put("taskID", resultSet.getInt("id"));
+						task.put("volunteerID", resultSet.getInt("ID_Volunteer"));
+						task.put("task", resultSet.getString("task"));
+						task.put("gardenID", resultSet.getInt("ID_garden"));
+						tasks.add(task);
+						task = new JSONObject();
+					}
+					
+					responseCode = 200;
+				}
+			}else{
+				responseCode = 401;
+				task.put("error", "Access denied: You are not authorized to see this page.");
+				tasks.add(task);
+			}
+		} else {
+			responseCode = 401;
+			task.put("error", "Access denied: the access token is invalid.");
+			tasks.add(task);
+		}
+		return Response.status(responseCode).entity(tasks.toJSONString()).build();
 	}
 }
