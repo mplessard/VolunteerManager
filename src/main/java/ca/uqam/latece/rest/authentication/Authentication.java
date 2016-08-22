@@ -42,14 +42,20 @@ public class Authentication {
 			if(authenticate(username, password)){
 				token = issueToken(username);
 				Date expirationDate = null;
+				int role = 0;
+				int id = 0;
 				
-				ResultSet resultSet = Database.tableRequest("SELECT token_expiration_date FROM Volunteer WHERE username='" + username + "' AND token='" + token + "'");
+				ResultSet resultSet = Database.tableRequest("SELECT id, token_expiration_date, role FROM Volunteer WHERE username='" + username + "' AND token='" + token + "'");
 				if(resultSet.next()){
 					expirationDate = resultSet.getDate("token_expiration_date");
+					role = resultSet.getInt("role");
+					id = resultSet.getInt("id");
 				}
 				JSONObject toReturn = new JSONObject();
 				toReturn.put("token", token);
 				toReturn.put("exp_date", "" + expirationDate + "");
+				toReturn.put("role", role);
+				toReturn.put("id", id);
 				
 				response = Response.ok(toReturn.toJSONString()).build();
 			}
